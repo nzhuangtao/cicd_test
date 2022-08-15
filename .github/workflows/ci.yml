@@ -1,0 +1,39 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: 
+      - nzhuangtao
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest 
+        with:
+            host: ${{ secrets.SERVER_HOST }}
+            user: ${{ secrets.SERVER_USER }}
+            pass: ${{ secrets.SERVER_PASS }}
+        connect_timeout: 60s
+
+        scp: |
+            ./* => /www/app/cicd
+# 完成拷贝后在部署服务器执行的命令：进入项目目录，安装生产依赖，并使用 pm2 管理
+            last_ssh: | 
+              cd /www/app/cicd
+              pnpm i --prod
+              pm2 reload main.js
