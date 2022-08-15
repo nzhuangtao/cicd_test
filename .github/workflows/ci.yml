@@ -21,7 +21,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
       - name: Run a one-line script
         uses: cross-the-world/ssh-scp-ssh-pipelines@latest 
         with:
@@ -32,7 +31,7 @@ jobs:
 
         scp: |
             ./* => /www/app/cicd
-# 完成拷贝后在部署服务器执行的命令：进入项目目录，安装生产依赖，并使用 pm2 管理
+            # 完成拷贝后在部署服务器执行的命令：进入项目目录，安装生产依赖，并使用 pm2 管理
             last_ssh: | 
               cd /www/app/cicd
               pnpm i --prod
