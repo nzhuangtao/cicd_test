@@ -1,11 +1,12 @@
 # workflow 工作流的名字，自定义
 name: Express App
+​
 # 配置触发条件
 on:
   push: # 监听到 main 分支的 push 动作
-    branches:
-      - nzhuangtao
-
+    branches:
+      - nzhuangtao
+​
 # 工作流的任务集配置
 jobs:
   # 定义一个 job，id 为 build
