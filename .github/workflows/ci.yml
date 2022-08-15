@@ -26,9 +26,6 @@ jobs:
           node-version: "16.x"
       - name: Installing Dependencies
         run: npm install
-      - name: Running Lint
-        # 通过前面章节定义的命令行执行代码扫描
-        run: npm run lint:js
       - name: Running Test
         # 通过前面章节定义的命令行执行自动化测试
         run: npm run test
