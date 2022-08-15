@@ -20,19 +20,15 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-
-      - name: Run a one-line script
-        uses: cross-the-world/ssh-scp-ssh-pipelines@latest 
+      - name: Use Node.js
+        uses: actions/setup-node@v3
         with:
-            host: ${{ secrets.SERVER_HOST }}
-            user: ${{ secrets.SERVER_USER }}
-            pass: ${{ secrets.SERVER_PASS }}
-        connect_timeout: 60s
-
-        scp: |
-            ./* => /www/app/cicd
-            # 完成拷贝后在部署服务器执行的命令：进入项目目录，安装生产依赖，并使用 pm2 管理
-            last_ssh: | 
-              cd /www/app/cicd
-              pnpm i --prod
-              pm2 reload main.js
+          node-version: "16.x"
+      - name: Installing Dependencies
+        run: npm install
+      - name: Running Lint
+        # 通过前面章节定义的命令行执行代码扫描
+        run: npm run lint:js
+      - name: Running Test
+        # 通过前面章节定义的命令行执行自动化测试
+        run: npm run test
