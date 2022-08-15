@@ -1,46 +1,39 @@
-name: CI
-# Event设置为main分支的pull request事件，
-# 这里的main分支相当于master分支，github项目新建是把main设置为默认分支，我懒得改了所以就保持这样吧
+# workflow 工作流的名字，自定义
+name: Express App
+​
+# 配置触发条件
 on:
-  pull_request:
-    branches: main
+  push: # 监听到 main 分支的 push 动作
+    branches:
+      - main
+​
+# 工作流的任务集配置
 jobs:
-  # 只需要定义一个job并命名为CI
-  CI:
-    runs-on: ubuntu-latest
-    steps:
-      # 拉取项目代码
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      # 给当前环境下载node
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "16.x"
-      # 检查缓存
-      # 如果key命中缓存则直接将缓存的文件还原到 path 目录，从而减少流水线运行时间
-      # 若 key 没命中缓存时，在当前Job成功完成时将自动创建一个新缓存
-      - name: Cache
-        # 缓存命中结果会存储在steps.[id].outputs.cache-hit里，该变量在继后的step中可读
-        id: cache-dependencies
-        uses: actions/cache@v3
-        with:
-          # 缓存文件目录的路径
-          path: |
-            **/node_modules
-          # key中定义缓存标志位的生成方式。runner.OS指当前环境的系统。外加对yarn.lock内容生成哈希码作为key值，如果yarn.lock改变则代表依赖有变化。
-          # 这里用yarn.lock而不是package.json是因为package.json中还有version和description之类的描述项目但和依赖无关的属性
-          key: ${{runner.OS}}-${{hashFiles('**/yarn.lock')}}
-      # 安装依赖
-      - name: Installing Dependencies
-        # 如果缓存标志位没命中，则执行该step。否则就跳过该step
-        if: steps.cache-dependencies.outputs.cache-hit != 'true'
-        run: yarn install
-      # 运行代码扫描
-      - name: Running Lint
-        # 通过前面章节定义的命令行执行代码扫描
-        run: yarn lint
-      # 运行自动化测试
-      - name: Running Test
-        # 通过前面章节定义的命令行执行自动化测试
-        run: yarn test
+  # 定义一个 job，id 为 build
+  build:
+    # 指定任务执行的运行器。latest 表示是 GitHub 提供的最新稳定映像，但可能不是操作系统供应商提供的最新版本。
+    runs-on: ubuntu-latest
+​
+    # 定义 job 的具体步骤
+    steps: # 每一个 step 或者是执行一个 action，或者是执行一个命令
+      - name: Checkout # 定义 step 的名字，方便作日志排查
+        uses: actions/checkout@v3  # uses 表示该步骤使用一个 action 。斜线前面的 'actions' 表示这是官方的action
+​
+      - name: Deploy to Server # 执行部署任务
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest # 第三方的 action
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SERVER_USER }}
+          pass: ${{ secrets.SERVER_PASS }}
+​
+          # 由于网络情况，很容易超时，设置为60s
+          connect_timeout: 60s
+​
+          # 将工作目录下的文件全部拷贝到部署服务器的工作目录
+          scp: |
+            ./* => /www/github-actions-express
+          # 完成拷贝后在部署服务器执行的命令：进入项目目录，安装生产依赖，并使用 pm2 管理
+          last_ssh: |
+            cd /www/github-actions-express
+            pnpm i --prod
+            pm2 reload app.config.js
