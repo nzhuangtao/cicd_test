@@ -19,13 +19,20 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Deloy to Server
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
         with:
-          node-version: "16.x"
-      - name: Installing Dependencies
-        run: npm install
-      - name: Running Test
-        # 通过前面章节定义的命令行执行自动化测试
-        run: npm run test
+          host: ${{ secrets.SERVER_HOST }}
+          user: ${{ secrets.SERVER_USER }}
+          pass: ${{ secrets.SERVER_PASS }}
+
+          connect_timeout:60s
+          scp: |
+            ./* => /www/app/cicd
+            last_ssh: |
+            cd /www/app/cicd
+            pnpm i --prod
+            pm2 reload main.js
