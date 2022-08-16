@@ -32,7 +32,7 @@ jobs:
           connect_timeout: 60s
           scp: |
             ./* => /www/app/cicd
-            last_ssh: |
+          last_ssh: |
             cd /www/app/cicd
             pnpm i --prod
             pm2 reload main.js
