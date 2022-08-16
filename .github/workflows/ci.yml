@@ -28,8 +28,8 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           user: ${{ secrets.SERVER_USER }}
           pass: ${{ secrets.SERVER_PASS }}
-
-          connect_timeout:60s
+          # 设置超时间为60s
+          connect_timeout: 60s
           scp: |
             ./* => /www/app/cicd
             last_ssh: |
